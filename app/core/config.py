@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +24,12 @@ class Settings(BaseSettings):
     email_from: str
     admin_email: str = "admin@test.com"
     admin_password: str = "admin123"
+
+    @field_validator("*", mode="before")
+    def strip_whitespace(cls, value):
+        if isinstance(value, str):
+            return value.strip()
+        return value
 
     model_config = SettingsConfigDict(
         env_file=".env",

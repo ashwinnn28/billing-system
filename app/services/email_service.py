@@ -7,6 +7,7 @@ from email.message import EmailMessage
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.database.database import SessionLocal
 from app.services.invoice_service import InvoiceService
 
 logger = logging.getLogger(__name__)
@@ -16,8 +17,10 @@ def send_invoice_email(
     customer_email: str,
     invoice_id: int,
     pdf_path: str,
-    db: Session
+    db: Session | None = None
 ):
+    managed_db = db or SessionLocal()
+    close_session = db is None
     try:
         if not os.path.exists(pdf_path):
             raise FileNotFoundError(f"Invoice PDF not found: {pdf_path}")
@@ -32,7 +35,7 @@ def send_invoice_email(
                 "SMTP configuration is not complete. Verify SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD."
             )
 
-        invoice = InvoiceService.get_invoice(db, invoice_id)
+        invoice = InvoiceService.get_invoice(managed_db, invoice_id)
         if invoice is None:
             raise ValueError(f"Invoice {invoice_id} not found.")
 
@@ -73,8 +76,11 @@ def send_invoice_email(
             smtp.login(smtp_email, smtp_password)
             smtp.send_message(message)
 
-        InvoiceService.mark_email_sent(db, invoice_id)
+        InvoiceService.mark_email_sent(managed_db, invoice_id)
         logger.info("Invoice email sent successfully for invoice %s to %s", invoice_id, customer_email)
     except Exception as e:
         logger.error(str(e))
         raise
+    finally:
+        if close_session:
+            managed_db.close()

@@ -32,6 +32,7 @@ router = APIRouter(
 )
 def create_invoice(
     invoice_data: InvoiceCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user=Depends(check_role(["admin", "staff"]))
 ):
@@ -41,11 +42,11 @@ def create_invoice(
 
         pdf_path = PDFService.generate_invoice_pdf(invoice)
 
-        send_invoice_email(
+        background_tasks.add_task(
+            send_invoice_email,
             invoice.customer.email,
             invoice.id,
             pdf_path,
-            db
         )
 
         return invoice
@@ -76,7 +77,6 @@ def test_invoice_email(
             customer_email,
             invoice.id,
             pdf_path,
-            db
         )
 
         return {

@@ -3,364 +3,619 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Billing Page</title>
+    <title>Billing Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            color-scheme: light;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #111827;
+            background: #f3f5f9;
+            --bg: #f3f5f9;
+            --surface: #ffffff;
+            --surface-soft: #f8fafc;
+            --border: #d1d5db;
+            --border-soft: #e5e7eb;
+            --text: #111827;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --primary-soft: #eff6ff;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --radius: 24px;
+            --shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
             margin: 0;
-            padding: 0;
-            background: #f3f4f7;
-            color: #1f2937;
+            min-height: 100%;
+            background: var(--bg);
         }
+
+        body {
+            color: var(--text);
+        }
+
+        button, input {
+            font: inherit;
+        }
+
         main {
-            max-width: 900px;
-            margin: 24px auto;
-            padding: 0 16px;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 28px 20px 40px;
         }
-        .billing-card {
-            background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
-            border: 1px solid #dbe4ff;
-            border-radius: 18px;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-            padding: 28px;
-        }
-        .page-title {
-            text-align: center;
-            margin-bottom: 24px;
-            font-size: 24px;
-            letter-spacing: 0.06em;
-            color: #1e293b;
-        }
-        .row {
+
+        .topbar {
             display: flex;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 26px;
+            padding: 22px 28px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: clamp(1.9rem, 2.5vw, 2.6rem);
+            letter-spacing: -0.04em;
+        }
+
+        .topbar p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            max-width: 680px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            margin: 0 0 10px;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .card-description {
+            margin: 0 0 22px;
+            color: var(--muted);
+            max-width: 740px;
+        }
+
+        .section-title {
+            margin: 0 0 16px;
+            color: #475569;
+            font-size: 0.78rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
             gap: 24px;
         }
-        .column {
-            flex: 1 1 320px;
+
+        .field-group {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
+            min-width: 0;
         }
-        .field-row,
-        .item-row,
-        .denomination-row,
-        .footer-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .field-row label,
-        .item-row label,
-        .denomination-row label {
-            min-width: 140px;
-            font-size: 14px;
-            color: #475569;
-            font-weight: 600;
-        }
-        .field-row div,
-        .invoice-summary-value {
-            flex: 1;
-            color: #111827;
-            font-weight: 600;
-        }
-        .field-row input,
-        .item-row input,
-        .denomination-row input {
-            flex: 1;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-size: 14px;
-            background: #f8fafc;
-        }
-        .button-small,
-        .button-large {
-            border: none;
-            border-radius: 12px;
+
+        label {
+            font-size: 0.92rem;
             font-weight: 700;
+            color: #475569;
+        }
+
+        .input-field {
+            width: 100%;
+            min-width: 0;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--surface-soft);
+            color: var(--text);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.7);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+        }
+
+        .button {
+            border: none;
+            border-radius: 16px;
+            padding: 14px 18px;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.12);
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            min-height: 50px;
         }
-        .button-small {
-            padding: 10px 14px;
-            background: #3b82f6;
-            color: white;
-        }
-        .button-large {
-            padding: 12px 18px;
-            min-width: 140px;
-        }
-        .button-small:hover,
-        .button-large:hover {
+
+        .button:hover:not(:disabled) {
             transform: translateY(-1px);
-            box-shadow: 0 16px 30px rgba(59, 130, 246, 0.16);
+            box-shadow: 0 20px 34px rgba(37, 99, 235, 0.16);
         }
+
+        .button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .button-secondary {
+            background: var(--surface-soft);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .button-danger {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        .button-block {
+            width: 100%;
+        }
+
+        .status-message {
+            display: none;
+            padding: 16px 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            font-size: 0.98rem;
+        }
+
+        .status-message.visible {
+            display: block;
+        }
+
+        .status-error {
+            background: rgba(220, 38, 38, 0.08);
+            color: var(--danger);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        .status-success {
+            background: rgba(22, 163, 74, 0.08);
+            color: var(--success);
+            border: 1px solid rgba(22, 163, 74, 0.2);
+        }
+
+        .status-info {
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        .invoice-items,
+        .denomination-list,
+        .invoice-table {
+            display: grid;
+            gap: 14px;
+        }
+
+        .invoice-item,
+        .denomination-item {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: 1.5fr 0.9fr auto;
+            align-items: center;
+            padding: 18px;
+            border-radius: 18px;
+            background: var(--surface-soft);
+            border: 1px solid var(--border-soft);
+        }
+
+        .denomination-item {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .invoice-item label,
+        .denomination-item label {
+            margin-bottom: 6px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
         .invoice-table-header,
         .invoice-table-row {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 1.5fr repeat(6, minmax(90px, 1fr));
+            gap: 14px;
             align-items: center;
         }
+
         .invoice-table-header {
-            padding: 14px 0;
-            font-size: 13px;
-            color: #1d4ed8;
-            font-weight: 700;
-            border-bottom: 2px solid #cbd5e1;
+            padding: 16px 0;
+            font-size: 0.88rem;
+            letter-spacing: 0.02em;
+            font-weight: 800;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border-soft);
         }
+
         .invoice-table-row {
-            padding: 10px 0;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 16px 0;
+            color: #344054;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .invoice-table-row:nth-child(even) {
-            background: #f8fafc;
+
+        .invoice-table-row:last-child {
+            border-bottom: none;
         }
-        .invoice-summary {
-            display: grid;
-            gap: 10px;
+
+        .summary-card,
+        .invoice-summary-card {
+            border-radius: 20px;
+            padding: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
         }
-        .invoice-summary .field-row {
+
+        .summary-row {
+            display: flex;
             justify-content: space-between;
+            gap: 16px;
+            padding: 14px 0;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .invoice-summary .field-row label {
-            width: auto;
-            flex: 0 0 60%;
+
+        .summary-row:last-child {
+            border-bottom: none;
         }
-        .invoice-summary .field-row div {
-            flex: 0 0 40%;
+
+        .summary-label {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            color: var(--text);
+            font-weight: 700;
             text-align: right;
         }
-        .button-secondary {
-            background: #eef2ff;
-            color: #1e293b;
+
+        .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: var(--muted);
+            font-size: 0.95rem;
         }
-        .button-primary {
-            background: #2563eb;
-            color: white;
-        }
-        .button-danger {
-            background: #ef4444;
-            color: white;
-        }
-        .bill-card,
-        .denomination-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 16px;
-        }
-        .items-list {
-            display: grid;
-            gap: 12px;
-        }
-        .section-title {
-            font-size: 13px;
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: var(--primary);
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #475569;
-            margin-bottom: 14px;
+            font-size: 0.92rem;
         }
-        .denominations {
-            display: grid;
-            gap: 12px;
-        }
-        .footer-row {
-            justify-content: flex-end;
-            margin-top: 24px;
-        }
-        .wide-input {
-            width: 260px;
-        }
+
         .hidden {
-            display: none;
+            display: none !important;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-item,
+            .denomination-item {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            main {
+                padding: 18px 14px 32px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .invoice-table-header,
+            .invoice-table-row {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-table-row {
+                padding: 18px 0;
+            }
+
+            .page-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
 <main>
-    <div id="login-card" class="billing-card">
-        <div class="page-title">Login</div>
-        <div class="section">
-            <div class="field-row">
-                <label for="login-email">Email</label>
-                <input id="login-email" type="email" placeholder="Email" />
-            </div>
+    <div class="topbar">
+        <div>
+            <h1>Billing Dashboard</h1>
+            <p>Issue invoices, collect payments, and keep receipts organized with a clean workflow.</p>
         </div>
-        <div class="section">
-            <div class="field-row">
+        <button id="logout-button" class="button button-secondary hidden">Logout</button>
+    </div>
+
+    <div id="login-card" class="card">
+        <h2 class="card-title">Sign in to your account</h2>
+        <p class="card-description">Access the billing dashboard and manage invoices securely.</p>
+        <div id="login-error" class="status-message status-error" role="alert"></div>
+        <div class="grid-2">
+            <div class="field-group">
+                <label for="login-email">Email address</label>
+                <input id="login-email" class="input-field" type="email" placeholder="name@company.com" autocomplete="username" />
+            </div>
+            <div class="field-group">
                 <label for="login-password">Password</label>
-                <input id="login-password" type="password" placeholder="Password" />
+                <input id="login-password" class="input-field" type="password" placeholder="Enter your password" autocomplete="current-password" />
             </div>
         </div>
-        <div class="footer-row">
-            <button id="login-button" class="button-large button-primary">Login</button>
+        <div style="margin-top: 18px; display: flex; justify-content: flex-end;">
+            <button id="login-button" class="button button-primary button-block">Login</button>
         </div>
-        <div id="login-error" style="color: #dc2626; margin-top: 12px;"></div>
     </div>
 
-    <div id="billing-card" class="billing-card hidden">
-        <div class="footer-row" style="justify-content: space-between; margin-bottom: 24px;">
-            <div>Logged in as <span id="user-email"></span></div>
-            <button id="logout-button" class="button-small button-secondary">Logout</button>
+    <div id="billing-card" class="card hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px;">
+            <div>
+                <p class="section-title">Active session</p>
+                <h2 class="card-title" id="user-email">User</h2>
+            </div>
+            <button id="logout-button" class="button button-secondary">Logout</button>
         </div>
 
-        <div class="page-title">Billing Page</div>
+        <div id="billing-error" class="status-message status-error" role="alert"></div>
 
         <div class="section">
-            <div class="section-title">Customer Email</div>
-            <div class="field-row">
-                <label for="customer-email">Email ID</label>
-                <input id="customer-email" type="email" placeholder="Email ID" />
-                <button id="add-new-customer" class="button-small">Add New</button>
+            <p class="section-title">Customer details</p>
+            <div class="grid-2">
+                <div class="field-group">
+                    <label for="customer-email">Customer email</label>
+                    <input id="customer-email" class="input-field" type="email" placeholder="customer@example.com" />
+                </div>
             </div>
         </div>
 
-        <div class="section row">
-            <div class="column bill-card">
-                <div class="section-title">Bill section</div>
-                <div id="invoice-items-container" class="items-list"></div>
-                <div class="footer-row" style="justify-content:start; padding-top: 8px;">
-                    <button id="add-new-line" class="button-small">Add New</button>
+        <div class="grid-3">
+            <section class="summary-card">
+                <p class="section-title">Invoice items</p>
+                <div id="invoice-items-container" class="invoice-items"></div>
+                <div style="margin-top: 18px; display: flex; justify-content: flex-start; gap: 12px; flex-wrap: wrap;">
+                    <button id="add-new-line" class="button button-primary">Add item</button>
                 </div>
-            </div>
-            <div class="column denomination-card">
-                <div class="section-title">Denominations</div>
-                <div class="denominations">
-                    <div class="denomination-row">
+            </section>
+
+            <aside class="summary-card">
+                <p class="section-title">Denominations</p>
+                <div class="denomination-list">
+                    <div class="denomination-item">
                         <label>500</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
-                    <div class="denomination-row">
+                    <div class="denomination-item">
+                        <label>200</label>
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                    </div>
+                    <div class="denomination-item">
+                        <label>100</label>
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                    </div>
+                    <div class="denomination-item">
                         <label>50</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
-                    <div class="denomination-row">
+                    <div class="denomination-item">
                         <label>20</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
-                    <div class="denomination-row">
+                    <div class="denomination-item">
                         <label>10</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
-                    <div class="denomination-row">
+                    <div class="denomination-item">
                         <label>5</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
-                    <div class="denomination-row">
+                    <div class="denomination-item">
                         <label>2</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
-                    <div class="denomination-row">
+                    <div class="denomination-item">
                         <label>1</label>
-                        <input type="number" min="0" value="0" class="denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" />
                     </div>
                 </div>
-            </div>
+            </aside>
         </div>
 
-        <div class="section">
-            <div class="section-title">Cash paid by customer</div>
-            <div class="field-row">
-                <label for="cash-paid">Amount</label>
-                <input id="cash-paid" type="number" step="0.01" placeholder="Amount" class="wide-input" />
-            </div>
+        <div class="section" style="margin-top: 20px;">
+            <p class="section-title">Amount paid</p>
+            <input id="cash-paid" class="input-field" type="number" step="0.01" readonly placeholder="Calculated from denominations" />
         </div>
 
-        <div class="footer-row">
-            <button id="cancel-bill" class="button-large button-secondary">Cancel</button>
-            <button id="generate-bill" class="button-large button-primary">Generate Bill</button>
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 22px;">
+            <button id="cancel-bill" class="button button-secondary">Cancel</button>
+            <button id="generate-bill" class="button button-primary">Generate invoice</button>
         </div>
     </div>
 
-    <div id="invoice-result-card" class="billing-card hidden">
-        <div class="page-title">Invoice Receipt</div>
-        <div class="section">
-            <div class="field-row">
-                <label>Invoice #</label>
-                <div id="invoice-number"></div>
+    <div id="invoice-result-card" class="card hidden">
+        <div style="display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 24px;">
+            <div>
+                <p class="section-title">Invoice Ready</p>
+                <h2 class="card-title">Invoice receipt</h2>
             </div>
-            <div class="field-row">
-                <label>Customer</label>
-                <div id="invoice-customer"></div>
+            <span class="chip">Ready to print</span>
+        </div>
+
+        <div class="summary-card">
+            <div class="grid-2" style="align-items: start; gap: 30px; margin-bottom: 24px;">
+                <div>
+                    <p class="section-title">Invoice</p>
+                    <p><strong>Invoice #:</strong> <span id="invoice-number">N/A</span></p>
+                    <p><strong>Date:</strong> <span id="invoice-date">N/A</span></p>
+                </div>
+                <div>
+                    <p class="section-title">Customer</p>
+                    <p><span id="invoice-customer">N/A</span></p>
+                </div>
             </div>
-            <div class="field-row">
-                <label>Date</label>
-                <div id="invoice-date"></div>
+
+            <div class="invoice-table" id="invoice-items-table"></div>
+
+            <div class="invoice-summary-card" style="margin-top: 24px;">
+                <div class="summary-row"><span class="summary-label">Subtotal</span><span class="summary-value" id="invoice-subtotal">Rs 0.00</span></div>
+                <div class="summary-row"><span class="summary-label">Tax</span><span class="summary-value" id="invoice-tax">Rs 0.00</span></div>
+                <div class="summary-row"><span class="summary-label">Total</span><span class="summary-value" id="invoice-total">Rs 0.00</span></div>
+                <div class="summary-row"><span class="summary-label">Paid</span><span class="summary-value" id="invoice-paid">Rs 0.00</span></div>
+                <div class="summary-row"><span class="summary-label" id="invoice-balance-label">Balance</span><span class="summary-value" id="invoice-balance">Rs 0.00</span></div>
+            </div>
+
+            <div style="margin-top: 24px;">
+                <p class="section-title">Change breakdown</p>
+                <div id="invoice-denominations" class="denomination-list"></div>
             </div>
         </div>
-        <div class="section">
-            <div class="section-title">Line Items</div>
-            <div id="invoice-items-table"></div>
-        </div>
-        <div class="section invoice-summary">
-            <div class="field-row">
-                <label>Total price without tax</label>
-                <div id="invoice-subtotal"></div>
-            </div>
-            <div class="field-row">
-                <label>Total tax payable</label>
-                <div id="invoice-tax"></div>
-            </div>
-            <div class="field-row">
-                <label>Net price of the purchased item</label>
-                <div id="invoice-total"></div>
-            </div>
-            <div class="field-row">
-                <label>Rounded down value of the purchased items net price</label>
-                <div id="invoice-rounded"></div>
-            </div>
-            <div class="field-row">
-                <label>Paid</label>
-                <div id="invoice-paid"></div>
-            </div>
-            <div class="field-row">
-                <label id="invoice-balance-label">Balance payable to the customer</label>
-                <div id="invoice-balance"></div>
-            </div>
-        </div>
-        <div class="section">
-            <div class="section-title">Balance Denomination</div>
-            <div id="invoice-denominations"></div>
-        </div>
-        <div class="footer-row">
-            <button id="back-to-billing-button" class="button-large button-secondary">Back to Billing</button>
+
+        <div class="page-footer">
+            <div>Invoice generated by the Billing Dashboard</div>
+            <button id="back-to-billing-button" class="button button-secondary">Back to billing</button>
         </div>
     </div>
 </main>
 <script>
-let token = '';
+let token = localStorage.getItem('billingToken') || '';
 let customers = [];
+let currentCustomerEmail = '';
+
+function setLoading(button, isLoading, label = 'Processing...') {
+    if (!button) return;
+    if (isLoading) {
+        button.dataset.originalText = button.textContent;
+        button.textContent = label;
+        button.disabled = true;
+        button.classList.add('loading');
+    } else {
+        button.textContent = button.dataset.originalText || button.textContent;
+        button.disabled = false;
+        button.classList.remove('loading');
+    }
+}
+
+function showMessage(elementId, message, type = 'error') {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    element.textContent = message;
+    element.classList.add('visible');
+    element.classList.toggle('status-success', type === 'success');
+    element.classList.toggle('status-error', type === 'error');
+    element.classList.toggle('status-info', type === 'info');
+}
+
+function clearMessage(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    element.textContent = '';
+    element.classList.remove('visible', 'status-success', 'status-error', 'status-info');
+}
 
 function createItemRow(productId = '', quantity = 1) {
     const container = document.getElementById('invoice-items-container');
     const row = document.createElement('div');
-    row.className = 'item-row';
+    row.className = 'invoice-item item-row';
     row.innerHTML = `
-        <div>
+        <div class="field-group">
             <label>Product ID</label>
-            <input type="text" class="invoice-product-id" value="${productId}" placeholder="Product ID" />
+            <input type="text" class="input-field invoice-product-id" value="${productId}" placeholder="SKU or product ID" />
         </div>
-        <div>
+        <div class="field-group">
             <label>Quantity</label>
-            <input type="number" class="invoice-product-qty" min="1" value="${quantity}" />
+            <input type="number" class="input-field invoice-product-qty" min="1" value="${quantity}" />
         </div>
-        <button type="button" class="button-danger remove-item-btn">Remove</button>
+        <button type="button" class="button button-danger" aria-label="Remove item">Remove</button>
     `;
     container.appendChild(row);
-    row.querySelector('.remove-item-btn').addEventListener('click', () => row.remove());
+    row.querySelector('button').addEventListener('click', () => {
+        row.remove();
+        if (!container.querySelector('.item-row')) {
+            showEmptyItemsState();
+        }
+    });
+    removeEmptyItemsState();
+}
+
+function showEmptyItemsState() {
+    const container = document.getElementById('invoice-items-container');
+    if (container.querySelector('.empty-state')) return;
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.textContent = 'No invoice items added yet. Click Add item to begin.';
+    container.appendChild(emptyState);
+}
+
+function removeEmptyItemsState() {
+    const container = document.getElementById('invoice-items-container');
+    const state = container.querySelector('.empty-state');
+    if (state) state.remove();
 }
 
 function resetBillingPage() {
     document.getElementById('customer-email').value = '';
-    document.getElementById('cash-paid').value = '';
     document.querySelectorAll('.denomination-count').forEach(input => input.value = '0');
+    updateCashPaidFromDenominations();
     const container = document.getElementById('invoice-items-container');
     container.innerHTML = '';
     createItemRow();
+    clearMessage('billing-error');
 }
 
 function getInvoiceItems() {
@@ -398,23 +653,6 @@ async function postJson(url, body) {
     return data;
 }
 
-async function loadCustomers() {
-    try {
-        customers = await fetchJson('/api/v1/customers/');
-    } catch (error) {
-        console.error('Load customers error:', error.message);
-    }
-}
-
-function getDenominationValues() {
-    const denominations = [500, 50, 20, 10, 5, 2, 1];
-    return denominations.reduce((acc, value, index) => {
-        const count = Number(document.querySelectorAll('.denomination-count')[index].value) || 0;
-        acc[value] = count;
-        return acc;
-    }, {});
-}
-
 function formatCurrency(value) {
     const formatted = new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -425,7 +663,7 @@ function formatCurrency(value) {
 }
 
 function calculateDenominations(amount) {
-    const denominations = [500, 50, 20, 10, 5, 2, 1];
+    const denominations = [500, 200, 100, 50, 20, 10, 5, 2, 1];
     let remaining = Math.floor(amount);
     const result = {};
     denominations.forEach(value => {
@@ -435,68 +673,83 @@ function calculateDenominations(amount) {
     return result;
 }
 
-let currentCustomerEmail = '';
+function updateCashPaidFromDenominations() {
+    const denomValues = [500, 50, 20, 10, 5, 2, 1];
+    const counts = Array.from(document.querySelectorAll('.denomination-count')).map(input => Number(input.value) || 0);
+    const total = denomValues.reduce((sum, value, index) => sum + value * counts[index], 0);
+    const paidInput = document.getElementById('cash-paid');
+    if (paidInput) {
+        paidInput.value = total.toFixed(2);
+    }
+}
+
+function getCustomerByEmail(email) {
+    return customers.find(c => c.email?.toLowerCase() === email.toLowerCase());
+}
+
+async function loadCustomers() {
+    try {
+        customers = await fetchJson('/api/v1/customers/');
+    } catch (error) {
+        console.warn('Unable to load customers:', error.message);
+    }
+}
 
 function renderInvoicePage(invoice) {
-    console.log('renderInvoicePage invoice:', invoice);
     if (!invoice || typeof invoice !== 'object') {
-        alert('Invoice payload is invalid. Please refresh and try again.');
+        showMessage('billing-error', 'Unable to render invoice. Please try again.');
         return;
     }
 
-    document.getElementById('invoice-number').textContent = invoice.invoice_number || 'N/A';
-    document.getElementById('invoice-customer').textContent = currentCustomerEmail || invoice.customer_id || 'N/A';
-    document.getElementById('invoice-date').textContent = new Date(invoice.created_at).toLocaleString();
+    document.getElementById('invoice-number').textContent = invoice.invoice_number || invoice.id || 'N/A';
+    document.getElementById('invoice-customer').textContent = invoice.customer?.email || currentCustomerEmail || invoice.customer_id || 'N/A';
+    document.getElementById('invoice-date').textContent = invoice.created_at ? new Date(invoice.created_at).toLocaleString() : new Date().toLocaleString();
     document.getElementById('invoice-subtotal').textContent = formatCurrency(invoice.subtotal || 0);
     document.getElementById('invoice-tax').textContent = formatCurrency(invoice.tax || 0);
     document.getElementById('invoice-total').textContent = formatCurrency(invoice.total || 0);
     document.getElementById('invoice-paid').textContent = formatCurrency(invoice.paid_amount || 0);
-    document.getElementById('invoice-rounded').textContent = formatCurrency(Math.floor(invoice.total || 0));
 
     const balanceValue = Number(invoice.balance || 0);
-    const balanceLabel = balanceValue < 0 ? 'Balance payable to the customer' : 'Balance';
+    const balanceLabel = balanceValue < 0 ? 'Change due to customer' : 'Balance due from customer';
     document.getElementById('invoice-balance-label').textContent = balanceLabel;
-    document.getElementById('invoice-balance').textContent = balanceValue < 0 ? formatCurrency(Math.abs(balanceValue)) : formatCurrency(balanceValue);
+    document.getElementById('invoice-balance').textContent = formatCurrency(Math.abs(balanceValue));
 
+    const items = Array.isArray(invoice.items) ? invoice.items : Array.isArray(invoice.invoice_items) ? invoice.invoice_items : [];
     const table = document.createElement('div');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'collapse';
+    table.className = 'invoice-table';
     table.innerHTML = `
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr; gap: 8px; font-weight: 700; margin-bottom: 8px;">
+        <div class="invoice-table-header">
             <div>Product ID</div>
             <div>Unit Price</div>
             <div>Quantity</div>
             <div>Purchase Price</div>
-            <div>Tax % for item</div>
-            <div>Tax payable for item</div>
-            <div>Total price of the item</div>
+            <div>Tax %</div>
+            <div>Tax Value</div>
+            <div>Total Price</div>
         </div>
     `;
 
-    const items = Array.isArray(invoice.items)
-        ? invoice.items
-        : Array.isArray(invoice.invoice_items)
-            ? invoice.invoice_items
-            : [];
-
-    items.forEach(item => {
-        const row = document.createElement('div');
-        row.style.display = 'grid';
-        row.style.gridTemplateColumns = '2fr 1fr 1fr 1fr 1fr 1fr 1fr';
-        row.style.gap = '8px';
-        row.style.padding = '6px 0';
-        row.style.borderBottom = '1px solid #e5e7eb';
-        row.innerHTML = `
-            <div>${item.product_id || item.product_code || 'N/A'}</div>
-            <div>${formatCurrency(item.price)}</div>
-            <div>${item.quantity}</div>
-            <div>${formatCurrency(item.amount)}</div>
-            <div>${item.tax_percentage}%</div>
-            <div>${formatCurrency(item.tax_amount)}</div>
-            <div>${formatCurrency(item.total_price)}</div>
-        `;
-        table.appendChild(row);
-    });
+    if (!items.length) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.textContent = 'No invoice items were returned for this invoice.';
+        table.appendChild(emptyState);
+    } else {
+        items.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'invoice-table-row';
+            row.innerHTML = `
+                <div>${item.product_id || item.product_code || 'N/A'}</div>
+                <div>${formatCurrency(item.price || item.unit_price || 0)}</div>
+                <div>${item.quantity || 0}</div>
+                <div>${formatCurrency(item.amount || item.purchase_price || 0)}</div>
+                <div>${item.tax_percentage != null ? item.tax_percentage : item.tax || 0}%</div>
+                <div>${formatCurrency(item.tax_amount || item.tax_value || 0)}</div>
+                <div>${formatCurrency(item.total_price || item.total || 0)}</div>
+            `;
+            table.appendChild(row);
+        });
+    }
 
     const container = document.getElementById('invoice-items-table');
     container.innerHTML = '';
@@ -507,7 +760,9 @@ function renderInvoicePage(invoice) {
     const change = balanceValue < 0 ? Math.abs(balanceValue) : 0;
     if (change > 0) {
         const denominations = calculateDenominations(change);
-        Object.entries(denominations).forEach(([value, count]) => {
+        const order = [500, 200, 100, 50, 20, 10, 5, 2, 1];
+        order.forEach(value => {
+            const count = denominations[value] || 0;
             if (count > 0) {
                 const line = document.createElement('div');
                 line.textContent = `${value}: ${count}`;
@@ -515,38 +770,43 @@ function renderInvoicePage(invoice) {
             }
         });
     } else {
-        denomContainer.textContent = 'No change due';
+        denomContainer.textContent = 'No change due.';
     }
+}
+
+function showLoginPage() {
+    document.getElementById('login-card').classList.remove('hidden');
+    document.getElementById('billing-card').classList.add('hidden');
+    document.getElementById('invoice-result-card').classList.add('hidden');
+    document.getElementById('logout-button').classList.add('hidden');
+}
+
+function showBillingPage() {
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('billing-card').classList.remove('hidden');
+    document.getElementById('invoice-result-card').classList.add('hidden');
+    document.getElementById('logout-button').classList.remove('hidden');
 }
 
 function showInvoicePage() {
     document.getElementById('login-card').classList.add('hidden');
     document.getElementById('billing-card').classList.add('hidden');
     document.getElementById('invoice-result-card').classList.remove('hidden');
-}
-
-function showBillingPage() {
-    document.getElementById('invoice-result-card').classList.add('hidden');
-    document.getElementById('login-card').classList.add('hidden');
-    document.getElementById('billing-card').classList.remove('hidden');
-}
-
-function showLoginPage() {
-    document.getElementById('invoice-result-card').classList.add('hidden');
-    document.getElementById('billing-card').classList.add('hidden');
-    document.getElementById('login-card').classList.remove('hidden');
+    document.getElementById('logout-button').classList.remove('hidden');
 }
 
 async function login() {
+    clearMessage('login-error');
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value.trim();
-    const errorMessage = document.getElementById('login-error');
 
-    errorMessage.textContent = '';
     if (!email || !password) {
-        errorMessage.textContent = 'Email and password are required';
+        showMessage('login-error', 'Email and password are required.');
         return;
     }
+
+    const loginButton = document.getElementById('login-button');
+    setLoading(loginButton, true, 'Signing in...');
 
     try {
         const response = await fetch('/api/v1/auth/login', {
@@ -555,83 +815,110 @@ async function login() {
             body: new URLSearchParams({ username: email, password }).toString(),
         });
         const text = await response.text();
-        let data = null;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            data = null;
-        }
+        const data = text ? JSON.parse(text) : {};
         if (!response.ok) {
             throw new Error(data?.detail || text || 'Login failed');
         }
+
         token = data.access_token;
+        localStorage.setItem('billingToken', token);
+        localStorage.setItem('billingUser', email);
         document.getElementById('user-email').textContent = email;
         await loadCustomers();
         resetBillingPage();
         showBillingPage();
     } catch (error) {
-        errorMessage.textContent = error.message;
+        showMessage('login-error', error.message || 'Unable to login.');
+    } finally {
+        setLoading(loginButton, false);
     }
 }
 
 function logout() {
     token = '';
+    localStorage.removeItem('billingToken');
+    localStorage.removeItem('billingUser');
     customers = [];
     document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
-    document.getElementById('login-error').textContent = '';
+    clearMessage('login-error');
     showLoginPage();
 }
 
 async function onGenerateBill() {
+    clearMessage('billing-error');
+    const email = document.getElementById('customer-email').value.trim();
+    const items = getInvoiceItems();
+    const paidAmount = Number(document.getElementById('cash-paid').value) || 0;
+    const generateButton = document.getElementById('generate-bill');
+
+    if (!token) {
+        showMessage('billing-error', 'Please login before generating a bill.');
+        return;
+    }
+    if (!email) {
+        showMessage('billing-error', 'Customer email is required.');
+        return;
+    }
+    if (!items.length) {
+        showMessage('billing-error', 'Add at least one product item to continue.');
+        return;
+    }
+
+    setLoading(generateButton, true, 'Generating invoice...');
+
     try {
-        if (!token) {
-            return alert('Please login before generating a bill');
+        let customer = getCustomerByEmail(email);
+        if (!customer) {
+            customer = await postJson('/api/v1/customers/', { name: email, email, phone: '', address: '' });
+            if (customer?.id) customers.push(customer);
         }
 
-        const email = document.getElementById('customer-email').value.trim();
-        if (!email) return alert('Customer email is required');
-        const items = getInvoiceItems();
-        if (!items.length) return alert('Add at least one product item');
+        if (!customer?.id) {
+            throw new Error('Customer creation failed.');
+        }
 
-        const customer = customers.find(c => c.email.toLowerCase() === email.toLowerCase()) || await postJson('/api/v1/customers/', { name: email, email, phone: '', address: '' });
-        if (!customer.id) throw new Error('Customer creation failed');
-        if (!customers.some(c => c.id === customer.id)) customers.push(customer);
-
-        const paid_amount = Number(document.getElementById('cash-paid').value) || 0;
         currentCustomerEmail = email;
         const invoice = await postJson('/api/v1/invoices/', {
             customer_id: customer.id,
-            paid_amount,
+            paid_amount: paidAmount,
             items,
         });
 
         renderInvoicePage(invoice);
         showInvoicePage();
     } catch (error) {
-        alert('Error: ' + error.message);
+        showMessage('billing-error', error.message || 'Unable to generate invoice.');
+    } finally {
+        setLoading(generateButton, false);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-button').addEventListener('click', login);
-    document.getElementById('logout-button').addEventListener('click', logout);
+    document.querySelectorAll('#logout-button').forEach(button => button.addEventListener('click', logout));
     document.getElementById('back-to-billing-button').addEventListener('click', showBillingPage);
-    document.getElementById('add-new-line').addEventListener('click', () => createItemRow());
+    document.getElementById('add-new-line').addEventListener('click', createItemRow);
     document.getElementById('cancel-bill').addEventListener('click', resetBillingPage);
     document.getElementById('generate-bill').addEventListener('click', onGenerateBill);
-    document.getElementById('add-new-customer').addEventListener('click', async () => {
-        const email = document.getElementById('customer-email').value.trim();
-        if (!email) return alert('Enter email before adding new customer');
-        try {
-            const customer = await postJson('/api/v1/customers/', { name: email, email, phone: '', address: '' });
-            customers.push(customer);
-            alert('Customer added');
-        } catch (error) {
-            alert('Error adding customer: ' + error.message);
-        }
+    document.querySelectorAll('.denomination-count').forEach(input => {
+        input.addEventListener('input', updateCashPaidFromDenominations);
     });
-    showLoginPage();
+
+    resetBillingPage();
+
+    const storedToken = localStorage.getItem('billingToken');
+    const storedUser = localStorage.getItem('billingUser');
+    if (storedToken) {
+        token = storedToken;
+        document.getElementById('user-email').textContent = storedUser || 'User';
+        loadCustomers().catch(() => {
+            logout();
+        });
+        showBillingPage();
+    } else {
+        showLoginPage();
+    }
 });
 </script>
 </body>
