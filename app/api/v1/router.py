@@ -4,7 +4,8 @@ from app.api.v1.endpoints import (
     customers,
     products,
     invoices,
-    payments
+    payments,
+    auth
 )
 
 
@@ -24,4 +25,8 @@ api_router.include_router(
 
 api_router.include_router(
     payments.router
+)
+
+api_router.include_router(
+    auth.router
 )

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import (get_db,get_current_user)
 from app.schemas.customer import CustomerCreate, CustomerResponse
 from app.services import CustomerService
 
@@ -32,7 +32,8 @@ def create_customer(
     response_model=list[CustomerResponse]
 )
 def get_customers(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
 ):
 
     return CustomerService.get_customers(db)
