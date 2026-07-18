@@ -46,6 +46,26 @@ class InvoiceItem(Base):
         nullable=False,
     )
 
+    @property
+    def price(self) -> float:
+        return self.unit_price
+
+    @property
+    def amount(self) -> float:
+        return self.subtotal
+
+    @property
+    def tax_amount(self) -> float:
+        return self.subtotal * (self.tax_percentage / 100)
+
+    @property
+    def total_price(self) -> float:
+        return self.subtotal + self.tax_amount
+
+    @property
+    def product_code(self) -> str:
+        return self.product.product_id if self.product else ""
+
     invoice = relationship(
         "Invoice",
         back_populates="invoice_items",

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic import ConfigDict
 from typing import List
 from datetime import datetime
 
@@ -16,13 +17,16 @@ class InvoiceCreate(BaseModel):
 
 class InvoiceItemResponse(BaseModel):
     id: int
-    product_id: str
+    invoice_id: int
+    product_id: str = Field(..., alias='product_code')
     quantity: int
     price: float
     amount: float
+    tax_percentage: float
+    tax_amount: float
+    total_price: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class InvoiceResponse(BaseModel):
@@ -35,7 +39,6 @@ class InvoiceResponse(BaseModel):
     paid_amount: float
     balance: float
     created_at: datetime
-    items: List[InvoiceItemResponse]
+    items: List[InvoiceItemResponse] = Field(..., alias='invoice_items')
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

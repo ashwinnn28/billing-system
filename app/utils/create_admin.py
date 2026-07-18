@@ -1,28 +1,32 @@
+from app.core.config import settings
+from app.core.security import hash_password
 from app.database.database import SessionLocal
 from app.models.user import User
-from app.core.security import hash_password
 
 
-db = SessionLocal()
+def create_admin_user() -> None:
+    db = SessionLocal()
+    try:
+        existing_admin = db.query(User).filter(
+            User.email == settings.admin_email
+        ).first()
 
-existing_admin = db.query(User).filter(
-    User.email == "admin@test.com"
-).first()
+        if existing_admin:
+            return
 
-if existing_admin:
-    print("Admin user already exists")
-else:
-    admin = User(
-        name="Admin",
-        email="admin@test.com",
-        password=hash_password("admin123"),
-        role="admin",
-        is_active=True
-    )
+        admin = User(
+            name="Admin",
+            email=settings.admin_email,
+            password=hash_password(settings.admin_password),
+            role="admin",
+            is_active=True,
+        )
 
-    db.add(admin)
-    db.commit()
+        db.add(admin)
+        db.commit()
+    finally:
+        db.close()
 
-    print("Admin created successfully")
 
-db.close()
+if __name__ == "__main__":
+    create_admin_user()

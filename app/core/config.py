@@ -13,11 +13,16 @@ class Settings(BaseSettings):
 
     database_url: str
 
+    secret_key: str = "billing-secret-key"
+    access_token_expire_minutes: int = 60
+
     smtp_host: str
     smtp_port: int
     smtp_username: str
     smtp_password: str
     email_from: str
+    admin_email: str = "admin@test.com"
+    admin_password: str = "admin123"
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 from jose import jwt
 from passlib.context import CryptContext
 
+from app.core.config import settings
 
-SECRET_KEY = "billing-secret-key"
+
 ALGORITHM = "HS256"
 
 
@@ -43,7 +44,7 @@ def create_access_token(
     token_data = data.copy()
 
     expire = datetime.utcnow() + timedelta(
-        minutes=60
+        minutes=settings.access_token_expire_minutes
     )
 
     token_data.update(
@@ -54,6 +55,6 @@ def create_access_token(
 
     return jwt.encode(
         token_data,
-        SECRET_KEY,
+        settings.secret_key,
         algorithm=ALGORITHM
     )

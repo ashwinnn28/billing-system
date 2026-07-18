@@ -68,9 +68,6 @@ def create_invoice(db: Session, invoice_data):
     if paid_amount < 0:
         raise ValueError("Paid amount cannot be negative")
 
-    if paid_amount > total:
-        raise ValueError("Paid amount cannot exceed invoice total")
-
     balance = total - paid_amount
 
     # Create invoice

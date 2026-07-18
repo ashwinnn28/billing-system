@@ -1,65 +1,61 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.core.permissions import check_role
+
 from app.api.deps import get_db
+from app.core.permissions import check_role
 from app.core.roles import UserRole
-from app.schemas.invoice import (
-    InvoiceCreate,
-    InvoiceResponse
+from app.schemas.payment import (
+    PaymentCreate,
+    PaymentResponse,
 )
-from app.services import InvoiceService
+from app.services.payment_service import PaymentService
 
 
 router = APIRouter(
-    prefix="/invoices",
-    tags=["Invoices"]
+    prefix="/payments",
+    tags=["Payments"],
 )
 
 
 @router.post(
     "/",
-    response_model=InvoiceResponse
+    response_model=PaymentResponse,
 )
-def create_invoice(
-    invoice: InvoiceCreate,
-    db: Session = Depends(get_db)
+def add_payment(
+    payment: PaymentCreate,
+    db: Session = Depends(get_db),
+    user=Depends(
+        check_role(
+            [
+                UserRole.ADMIN,
+                UserRole.STAFF,
+            ]
+        )
+    ),
 ):
-
-    return InvoiceService.create_invoice(
+    return PaymentService.create_payment(
         db,
-        invoice
+        payment,
     )
 
 
 @router.get(
-    "/{invoice_id}",
-    response_model=InvoiceResponse
+    "/invoice/{invoice_id}",
+    response_model=list[PaymentResponse],
 )
-def get_invoice(
+def get_invoice_payments(
     invoice_id: int,
-    db: Session = Depends(get_db)
-):
-
-    return InvoiceService.get_invoice(
-        db,
-        invoice_id
-    )
-
-@router.post("/")
-def add_payment(
-
-    user = Depends(
+    db: Session = Depends(get_db),
+    user=Depends(
         check_role(
             [
                 UserRole.ADMIN,
-                UserRole.STAFF
+                UserRole.STAFF,
             ]
         )
-    )
-
+    ),
 ):
-
-    return {
-        "message":
-        "Payment added"
-    }
+    return PaymentService.get_invoice_payments(
+        db,
+        invoice_id,
+    )
