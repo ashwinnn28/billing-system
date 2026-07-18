@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from app.core.permissions import check_role
 from app.api.deps import get_db
+from app.core.roles import UserRole
 from app.schemas.invoice import (
     InvoiceCreate,
     InvoiceResponse
@@ -43,3 +44,22 @@ def get_invoice(
         db,
         invoice_id
     )
+
+@router.post("/")
+def add_payment(
+
+    user = Depends(
+        check_role(
+            [
+                UserRole.ADMIN,
+                UserRole.STAFF
+            ]
+        )
+    )
+
+):
+
+    return {
+        "message":
+        "Payment added"
+    }

@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import (
+    get_db,
+    get_current_user
+)
 from app.schemas.invoice import (
     InvoiceCreate,
     InvoiceResponse
 )
 from app.services import InvoiceService
-
+from app.core.permissions import check_role
 
 router = APIRouter(
     prefix="/invoices",
@@ -21,8 +24,18 @@ router = APIRouter(
 )
 def create_invoice(
     invoice: InvoiceCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
+
+    check_role(
+        current_user,
+        [
+            "admin",
+            "staff"
+        ]
+    )
+
 
     return InvoiceService.create_invoice(
         db,
