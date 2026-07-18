@@ -2,7 +2,7 @@ from sqlalchemy import Integer
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
-from app.database.database import Base
+from app.database.base import Base
 
 
 class Denomination(Base):

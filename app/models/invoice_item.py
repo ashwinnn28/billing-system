@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
-from app.database.database import Base
+from app.database.base import Base
 
 
 class InvoiceItem(Base):
