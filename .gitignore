@@ -1,15 +1,71 @@
+# =========================
+# Virtual Environment
+# =========================
 .venv/
+venv/
 
+# =========================
+# Python
+# =========================
 __pycache__/
+*.py[cod]
+*$py.class
 
-*.pyc
-
+# =========================
+# Environment Variables
+# =========================
 .env
+.env.*
 
+# Keep the template
+!.env.example
+
+# =========================
+# IDE
+# =========================
+.vscode/
 .idea/
 
-.vscode/
-
+# =========================
+# Database
+# =========================
 *.db
+*.sqlite3
 
-alembic/versions/*.pyc
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Testing
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Build Files
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Alembic
+# =========================
+alembic/__pycache__/
+
+# =========================
+# Operating System
+# =========================
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
