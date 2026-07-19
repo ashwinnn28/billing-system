@@ -504,11 +504,20 @@
         <div class="section">
             <p class="section-title">Customer details</p>
             <div class="grid-2">
-                <div class="field-group">
+                        <div class="field-group">
                     <label for="customer-email">Customer email</label>
                     <input id="customer-email" class="input-field" type="email" placeholder="customer@example.com" />
                 </div>
             </div>
+            <div style="margin-top: 16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                <button id="view-history-button" class="button button-secondary">View purchase history</button>
+                <div id="history-message" class="status-message status-info" role="status"></div>
+            </div>
+        </div>
+
+        <div id="purchase-history-card" class="card hidden" style="margin-top: 20px;">
+            <p class="section-title">Customer purchase history</p>
+            <div id="customer-history-list" class="invoice-table"></div>
         </div>
 
         <div class="grid-3">
@@ -521,43 +530,43 @@
             </section>
 
             <aside class="summary-card">
-                <p class="section-title">Denominations</p>
+                <p class="section-title">Cash drawer available notes</p>
                 <div class="denomination-list">
                     <div class="denomination-item">
                         <label>500</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="500" />
                     </div>
                     <div class="denomination-item">
                         <label>200</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="200" />
                     </div>
                     <div class="denomination-item">
                         <label>100</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="100" />
                     </div>
                     <div class="denomination-item">
                         <label>50</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="50" />
                     </div>
                     <div class="denomination-item">
                         <label>20</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="20" />
                     </div>
                     <div class="denomination-item">
                         <label>10</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="10" />
                     </div>
                     <div class="denomination-item">
                         <label>5</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="5" />
                     </div>
                     <div class="denomination-item">
                         <label>2</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="2" />
                     </div>
                     <div class="denomination-item">
                         <label>1</label>
-                        <input type="number" min="0" value="0" class="input-field denomination-count" />
+                        <input type="number" min="0" value="0" class="input-field denomination-count" data-value="1" />
                     </div>
                 </div>
             </aside>
@@ -565,7 +574,7 @@
 
         <div class="section" style="margin-top: 20px;">
             <p class="section-title">Amount paid</p>
-            <input id="cash-paid" class="input-field" type="number" step="0.01" readonly placeholder="Calculated from denominations" />
+            <input id="paid-amount" class="input-field" type="number" step="0.01" placeholder="Enter paid amount" />
         </div>
 
         <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-top: 22px;">
@@ -591,7 +600,11 @@
                 </div>
                 <div>
                     <p class="section-title">Customer</p>
-                    <p style="font-weight: 700; color: #111827; margin-bottom: 0;"><span id="invoice-customer">N/A</span></p>
+                    <p style="font-weight: 700; color: #111827; margin-bottom: 0;">
+                        <span id="invoice-customer-name">N/A</span><br />
+                        <span id="invoice-customer-email">N/A</span><br />
+                        <span id="invoice-customer-phone">N/A</span>
+                    </p>
                 </div>
             </div>
 
@@ -647,7 +660,7 @@ let toastTimeoutId;
 
 function showMessage(elementId, message, type = 'error') {
     const element = document.getElementById(elementId);
-    if (!element) return;
+    if (!element || typeof element.textContent === 'undefined') return;
     element.textContent = message;
     element.classList.add('visible');
     element.classList.toggle('status-success', type === 'success');
@@ -657,7 +670,7 @@ function showMessage(elementId, message, type = 'error') {
 
 function clearMessage(elementId) {
     const element = document.getElementById(elementId);
-    if (!element) return;
+    if (!element || typeof element.textContent === 'undefined') return;
     element.textContent = '';
     element.classList.remove('visible', 'status-success', 'status-error', 'status-info');
 }
@@ -665,8 +678,10 @@ function clearMessage(elementId) {
 function showToast(message, title = 'Email sent successfully') {
     const toast = document.getElementById('toast-success');
     if (!toast) return;
-    toast.querySelector('strong').textContent = title;
-    toast.querySelector('div > div').textContent = message;
+    const titleElement = toast.querySelector('strong');
+    const messageElement = toast.querySelector('div > div');
+    if (titleElement) titleElement.textContent = title;
+    if (messageElement) messageElement.textContent = message;
     toast.classList.add('visible');
     if (toastTimeoutId) {
         clearTimeout(toastTimeoutId);
@@ -728,12 +743,15 @@ function removeEmptyItemsState() {
 
 function resetBillingPage() {
     document.getElementById('customer-email').value = '';
+    currentCustomerEmail = '';
+    document.getElementById('paid-amount').value = '';
     document.querySelectorAll('.denomination-count').forEach(input => input.value = '0');
-    updateCashPaidFromDenominations();
     const container = document.getElementById('invoice-items-container');
     container.innerHTML = '';
     createItemRow();
     clearMessage('billing-error');
+    clearMessage('history-message');
+    hideCustomerHistory();
 }
 
 function getInvoiceItems() {
@@ -791,14 +809,16 @@ function calculateDenominations(amount) {
     return result;
 }
 
-function updateCashPaidFromDenominations() {
-    const denomValues = [500, 200, 100, 50, 20, 10, 5, 2, 1];
-    const counts = Array.from(document.querySelectorAll('.denomination-count')).map(input => Number(input.value) || 0);
-    const total = denomValues.reduce((sum, value, index) => sum + value * counts[index], 0);
-    const paidInput = document.getElementById('cash-paid');
-    if (paidInput) {
-        paidInput.value = total.toFixed(2);
-    }
+function getDenominationsFromInputs() {
+    return Array.from(document.querySelectorAll('.denomination-count')).map(input => ({
+        value: Number(input.dataset.value),
+        available_count: Number(input.value) || 0,
+    }));
+}
+
+function getPaidAmountFromInputs() {
+    const input = document.getElementById('paid-amount');
+    return input ? Number(input.value) || 0 : 0;
 }
 
 function isValidEmail(email) {
@@ -817,24 +837,148 @@ async function loadCustomers() {
     }
 }
 
+function hideCustomerHistory() {
+    const historyCard = document.getElementById('purchase-history-card');
+    if (!historyCard) return;
+    historyCard.classList.add('hidden');
+}
+
+function renderCustomerHistory(invoices) {
+    const container = document.getElementById('customer-history-list');
+    const historyCard = document.getElementById('purchase-history-card');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!Array.isArray(invoices) || invoices.length === 0) {
+        hideCustomerHistory();
+        return;
+    }
+
+    const header = document.createElement('div');
+    header.className = 'invoice-table-header';
+    header.innerHTML = `
+        <div>Invoice #</div>
+        <div>Date</div>
+        <div>Total</div>
+        <div>Paid</div>
+        <div>Balance</div>
+        <div>Action</div>
+    `;
+    container.appendChild(header);
+
+    invoices.forEach(invoice => {
+        const row = document.createElement('div');
+        row.className = 'invoice-table-row';
+        row.innerHTML = `
+            <div>${invoice.invoice_number}</div>
+            <div>${invoice.created_at ? new Date(invoice.created_at).toLocaleString() : 'N/A'}</div>
+            <div>${formatCurrency(invoice.total)}</div>
+            <div>${formatCurrency(invoice.paid_amount)}</div>
+            <div>${formatCurrency(Math.abs(invoice.balance))}</div>
+            <button class="button button-secondary" data-invoice-id="${invoice.id}">View</button>
+        `;
+        row.querySelector('button')?.addEventListener('click', () => {
+            fetchInvoiceDetails(invoice.id);
+        });
+        container.appendChild(row);
+    });
+    if (historyCard) {
+        historyCard.classList.remove('hidden');
+    }
+}
+
+async function fetchCustomerPurchaseHistory() {
+    const historyCard = document.getElementById('purchase-history-card');
+    if (historyCard && !historyCard.classList.contains('hidden')) {
+        hideCustomerHistory();
+        clearMessage('history-message');
+        return;
+    }
+
+    clearMessage('history-message');
+    const emailInput = document.getElementById('customer-email');
+    const email = emailInput ? emailInput.value.trim() : '';
+    if (!email) {
+        showMessage('history-message', 'Enter customer email to view purchase history.', 'info');
+        hideCustomerHistory();
+        return;
+    }
+
+    if (!isValidEmail(email)) {
+        showMessage('history-message', 'Please enter a valid customer email address.', 'error');
+        hideCustomerHistory();
+        return;
+    }
+
+    const customer = getCustomerByEmail(email);
+    if (!customer) {
+        showMessage('history-message', 'Customer not found. Generate a bill first to create the customer.', 'info');
+        hideCustomerHistory();
+        return;
+    }
+
+    try {
+        const invoices = await fetchJson(`/api/v1/customers/${customer.id}/invoices`);
+        if (!Array.isArray(invoices) || invoices.length === 0) {
+            showMessage('history-message', 'No purchases found for this customer.', 'info');
+            hideCustomerHistory();
+            return;
+        }
+        renderCustomerHistory(invoices);
+    } catch (error) {
+        showMessage('history-message', error.message || 'Unable to load purchase history.', 'error');
+        hideCustomerHistory();
+    }
+}
+
+async function fetchInvoiceDetails(invoiceId) {
+    clearMessage('billing-error');
+    try {
+        const invoice = await fetchJson(`/api/v1/invoices/${invoiceId}`);
+        renderInvoicePage(invoice);
+        showInvoicePage();
+    } catch (error) {
+        showMessage('billing-error', error.message || 'Unable to load invoice details.');
+    }
+}
+
 function renderInvoicePage(invoice) {
     if (!invoice || typeof invoice !== 'object') {
         showMessage('billing-error', 'Unable to render invoice. Please try again.');
         return;
     }
 
-    document.getElementById('invoice-number').textContent = invoice.invoice_number || invoice.id || 'N/A';
-    document.getElementById('invoice-customer').textContent = invoice.customer?.email || currentCustomerEmail || invoice.customer_id || 'N/A';
-    document.getElementById('invoice-date').textContent = invoice.created_at ? new Date(invoice.created_at).toLocaleString() : new Date().toLocaleString();
-    document.getElementById('invoice-subtotal').textContent = formatCurrency(invoice.subtotal || 0);
-    document.getElementById('invoice-tax').textContent = formatCurrency(invoice.tax || 0);
-    document.getElementById('invoice-total').textContent = formatCurrency(invoice.total || 0);
-    document.getElementById('invoice-paid').textContent = formatCurrency(invoice.paid_amount || 0);
+    const invoiceNumberEl = document.getElementById('invoice-number');
+    const invoiceCustomerNameEl = document.getElementById('invoice-customer-name');
+    const invoiceCustomerEmailEl = document.getElementById('invoice-customer-email');
+    const invoiceCustomerPhoneEl = document.getElementById('invoice-customer-phone');
+    const invoiceDateEl = document.getElementById('invoice-date');
+    const invoiceSubtotalEl = document.getElementById('invoice-subtotal');
+    const invoiceTaxEl = document.getElementById('invoice-tax');
+    const invoiceTotalEl = document.getElementById('invoice-total');
+    const invoicePaidEl = document.getElementById('invoice-paid');
+    const invoiceBalanceLabelEl = document.getElementById('invoice-balance-label');
+    const invoiceBalanceEl = document.getElementById('invoice-balance');
+
+    const customer = invoice.customer;
+    const customerName = customer?.name || 'N/A';
+    const customerEmail = customer?.email || currentCustomerEmail || 'N/A';
+    const customerPhone = customer?.phone || 'N/A';
+
+    invoiceNumberEl && (invoiceNumberEl.textContent = invoice.invoice_number || invoice.id || 'N/A');
+    invoiceCustomerNameEl && (invoiceCustomerNameEl.textContent = customerName);
+    invoiceCustomerEmailEl && (invoiceCustomerEmailEl.textContent = customerEmail);
+    invoiceCustomerPhoneEl && (invoiceCustomerPhoneEl.textContent = customerPhone);
+    invoiceDateEl && (invoiceDateEl.textContent = invoice.created_at ? new Date(invoice.created_at).toLocaleString() : new Date().toLocaleString());
+    invoiceSubtotalEl && (invoiceSubtotalEl.textContent = formatCurrency(invoice.subtotal || 0));
+    invoiceTaxEl && (invoiceTaxEl.textContent = formatCurrency(invoice.tax || 0));
+    invoiceTotalEl && (invoiceTotalEl.textContent = formatCurrency(invoice.total || 0));
+    invoicePaidEl && (invoicePaidEl.textContent = formatCurrency(invoice.paid_amount || 0));
 
     const balanceValue = Number(invoice.balance || 0);
     const balanceLabel = balanceValue < 0 ? 'Change due to customer' : 'Balance due from customer';
-    document.getElementById('invoice-balance-label').textContent = balanceLabel;
-    document.getElementById('invoice-balance').textContent = formatCurrency(Math.abs(balanceValue));
+    invoiceBalanceLabelEl && (invoiceBalanceLabelEl.textContent = balanceLabel);
+    invoiceBalanceEl && (invoiceBalanceEl.textContent = formatCurrency(Math.abs(balanceValue)));
 
     const items = Array.isArray(invoice.items) ? invoice.items : Array.isArray(invoice.invoice_items) ? invoice.invoice_items : [];
     const table = document.createElement('div');
@@ -874,53 +1018,74 @@ function renderInvoicePage(invoice) {
     }
 
     const container = document.getElementById('invoice-items-table');
-    container.innerHTML = '';
-    container.appendChild(table);
+    if (container) {
+        container.innerHTML = '';
+        container.appendChild(table);
+    }
 
     const denomContainer = document.getElementById('invoice-denominations');
-    denomContainer.innerHTML = '';
+    if (denomContainer) {
+        denomContainer.innerHTML = '';
+    }
     const change = balanceValue < 0 ? Math.abs(balanceValue) : 0;
-    if (change > 0) {
-        const denominations = calculateDenominations(change);
+    if (change > 0 && denomContainer) {
+        const distribution = invoice.change_distribution || calculateDenominations(change);
         const order = [500, 200, 100, 50, 20, 10, 5, 2, 1];
         order.forEach(value => {
-            const count = denominations[value] || 0;
+            const count = distribution?.[value] || 0;
             if (count > 0) {
                 const line = document.createElement('div');
                 line.textContent = `${value}: ${count}`;
                 denomContainer.appendChild(line);
             }
         });
-    } else {
+    } else if (denomContainer) {
         denomContainer.textContent = 'No change due.';
     }
 }
 
 function showLoginPage() {
-    document.getElementById('login-card').classList.remove('hidden');
-    document.getElementById('billing-card').classList.add('hidden');
-    document.getElementById('invoice-result-card').classList.add('hidden');
-    document.getElementById('logout-button').classList.add('hidden');
+    const loginCard = document.getElementById('login-card');
+    const billingCard = document.getElementById('billing-card');
+    const invoiceCard = document.getElementById('invoice-result-card');
+    const logoutButton = document.getElementById('logout-button');
+
+    loginCard && loginCard.classList.remove('hidden');
+    billingCard && billingCard.classList.add('hidden');
+    invoiceCard && invoiceCard.classList.add('hidden');
+    logoutButton && logoutButton.classList.add('hidden');
 }
 
 function showBillingPage() {
-    document.getElementById('login-card').classList.add('hidden');
-    document.getElementById('billing-card').classList.remove('hidden');
-    document.getElementById('invoice-result-card').classList.add('hidden');
-    document.getElementById('logout-button').classList.remove('hidden');
+    const loginCard = document.getElementById('login-card');
+    const billingCard = document.getElementById('billing-card');
+    const invoiceCard = document.getElementById('invoice-result-card');
+    const logoutButton = document.getElementById('logout-button');
+
+    loginCard && loginCard.classList.add('hidden');
+    billingCard && billingCard.classList.remove('hidden');
+    invoiceCard && invoiceCard.classList.add('hidden');
+    logoutButton && logoutButton.classList.remove('hidden');
 }
 
 function showInvoicePage() {
-    document.getElementById('login-card').classList.add('hidden');
-    document.getElementById('billing-card').classList.add('hidden');
-    document.getElementById('invoice-result-card').classList.remove('hidden');
-    document.getElementById('logout-button').classList.remove('hidden');
+    const loginCard = document.getElementById('login-card');
+    const billingCard = document.getElementById('billing-card');
+    const invoiceCard = document.getElementById('invoice-result-card');
+    const logoutButton = document.getElementById('logout-button');
+
+    loginCard && loginCard.classList.add('hidden');
+    billingCard && billingCard.classList.add('hidden');
+    invoiceCard && invoiceCard.classList.remove('hidden');
+    logoutButton && logoutButton.classList.remove('hidden');
 }
 
 async function login() {
     clearMessage('login-error');
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value.trim();
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const email = loginEmail ? loginEmail.value.trim() : '';
+    const password = loginPassword ? loginPassword.value.trim() : '';
 
     if (!email || !password) {
         showMessage('login-error', 'Email and password are required.');
@@ -945,7 +1110,8 @@ async function login() {
         token = data.access_token;
         localStorage.setItem('billingToken', token);
         localStorage.setItem('billingUser', email);
-        document.getElementById('user-email').textContent = email;
+        const userEmailEl = document.getElementById('user-email');
+        if (userEmailEl) userEmailEl.textContent = email;
         await loadCustomers();
         resetBillingPage();
         showBillingPage();
@@ -961,17 +1127,20 @@ function logout() {
     localStorage.removeItem('billingToken');
     localStorage.removeItem('billingUser');
     customers = [];
-    document.getElementById('login-email').value = '';
-    document.getElementById('login-password').value = '';
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    if (loginEmail) loginEmail.value = '';
+    if (loginPassword) loginPassword.value = '';
     clearMessage('login-error');
     showLoginPage();
 }
 
 async function onGenerateBill() {
     clearMessage('billing-error');
-    const email = document.getElementById('customer-email').value.trim();
+    const customerEmailInput = document.getElementById('customer-email');
+    const email = customerEmailInput ? customerEmailInput.value.trim() : '';
     const items = getInvoiceItems();
-    const paidAmount = Number(document.getElementById('cash-paid').value) || 0;
+    const paidAmount = getPaidAmountFromInputs();
     const generateButton = document.getElementById('generate-bill');
 
     if (!token) {
@@ -996,7 +1165,12 @@ async function onGenerateBill() {
     try {
         let customer = getCustomerByEmail(email);
         if (!customer) {
-            customer = await postJson('/api/v1/customers/', { name: email, email, phone: '', address: '' });
+            customer = await postJson('/api/v1/customers/', {
+                name: email.split('@')[0],
+                email,
+                phone: '',
+                address: '',
+            });
             if (customer?.id) customers.push(customer);
         }
 
@@ -1008,6 +1182,7 @@ async function onGenerateBill() {
         const invoice = await postJson('/api/v1/invoices/', {
             customer_id: customer.id,
             paid_amount: paidAmount,
+            denominations: getDenominationsFromInputs(),
             items,
         });
 
@@ -1025,12 +1200,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-button').addEventListener('click', login);
     document.querySelectorAll('#logout-button').forEach(button => button.addEventListener('click', logout));
     document.getElementById('back-to-billing-button').addEventListener('click', showBillingPage);
-    document.getElementById('add-new-line').addEventListener('click', createItemRow);
+    document.getElementById('add-new-line').addEventListener('click', () => createItemRow());
     document.getElementById('cancel-bill').addEventListener('click', resetBillingPage);
     document.getElementById('generate-bill').addEventListener('click', onGenerateBill);
-    document.querySelectorAll('.denomination-count').forEach(input => {
-        input.addEventListener('input', updateCashPaidFromDenominations);
-    });
+    document.getElementById('view-history-button').addEventListener('click', fetchCustomerPurchaseHistory);
     const toastButton = document.querySelector('#toast-success button');
     if (toastButton) {
         toastButton.addEventListener('click', hideToast);
@@ -1042,7 +1215,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const storedUser = localStorage.getItem('billingUser');
     if (storedToken) {
         token = storedToken;
-        document.getElementById('user-email').textContent = storedUser || 'User';
+        const userEmailEl = document.getElementById('user-email');
+        if (userEmailEl) userEmailEl.textContent = storedUser || 'User';
         loadCustomers().catch(() => {
             logout();
         });

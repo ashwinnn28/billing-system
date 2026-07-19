@@ -43,8 +43,9 @@ def send_invoice_email(
         customer_name = (
             getattr(customer, "name", None)
             or f"{getattr(customer, 'first_name', '')} {getattr(customer, 'last_name', '')}".strip()
-            or customer_email
+            or "Customer"
         )
+        customer_phone = getattr(customer, "phone", "")
 
         invoice_ref = getattr(invoice, "invoice_number", invoice_id)
         subject = f"Your Invoice {invoice_ref} is Ready"
@@ -52,6 +53,8 @@ def send_invoice_email(
         body = (
             f"Hello {customer_name},\n\n"
             f"Your invoice {invoice_ref} has been generated successfully.\n"
+            f"Customer Email: {customer_email}\n"
+            f"Customer Phone: {customer_phone or 'N/A'}\n\n"
             "Please find the attached invoice PDF.\n\n"
             "Thank you for your business.\n"
             "If you have any questions, reply to this email."

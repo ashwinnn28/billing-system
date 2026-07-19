@@ -6,6 +6,7 @@ from app.models.customer import Customer
 from app.models.product import Product
 from app.models.invoice import Invoice
 from app.models.invoice_item import InvoiceItem
+from app.services.denomination_service import DenominationService
 
 GST_PERCENTAGE = 18.0
 
@@ -68,6 +69,9 @@ def create_invoice(db: Session, invoice_data):
     if paid_amount < 0:
         raise ValueError("Paid amount cannot be negative")
 
+    if invoice_data.denominations:
+        DenominationService.set_denominations(db, invoice_data.denominations)
+
     balance = total - paid_amount
 
     # Create invoice
@@ -103,8 +107,35 @@ def create_invoice(db: Session, invoice_data):
         # Update stock
         item["product"].available_stock -= item["quantity"]
 
-    db.commit()
-    db.refresh(invoice)
+    change_distribution = None
+    try:
+        if paid_amount > total:
+            change_amount = paid_amount - total
+            if round(change_amount, 2) != int(change_amount):
+                raise ValueError(
+                    "Change cannot be provided for fractional rupees with available denominations"
+                )
+
+            denominations = DenominationService.get_denominations(db)
+            distribution, _ = DenominationService.calculate_change(
+                change_amount,
+                denominations,
+            )
+            DenominationService.decrement_change_counts(
+                db,
+                distribution,
+                commit=False,
+            )
+            change_distribution = distribution
+
+        db.commit()
+        db.refresh(invoice)
+    except Exception:
+        db.rollback()
+        raise
+
+    if change_distribution is not None:
+        invoice.change_distribution = change_distribution
 
     return invoice
 
@@ -125,6 +156,19 @@ def get_invoices(db: Session):
         .order_by(Invoice.id.desc())
         .all()
     )
+
+
+def get_invoices_by_customer(
+    db: Session,
+    customer_id: int
+):
+    return (
+        db.query(Invoice)
+        .filter(Invoice.customer_id == customer_id)
+        .order_by(Invoice.id.desc())
+        .all()
+    )
+
 
 def get_invoice_with_items(
     db: Session,

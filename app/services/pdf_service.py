@@ -65,10 +65,10 @@ def _prepare_invoice_lines(invoice) -> list[str]:
     customer_name = (
         getattr(customer, "name", None)
         or f"{getattr(customer, 'first_name', '')} {getattr(customer, 'last_name', '')}".strip()
-        or getattr(customer, "email", "")
         or "Customer"
     )
     customer_email = getattr(customer, "email", "")
+    customer_phone = getattr(customer, "phone", "")
 
     subtotal = getattr(invoice, "subtotal", 0) or 0
     tax = getattr(invoice, "tax", 0) or 0
@@ -91,7 +91,8 @@ def _prepare_invoice_lines(invoice) -> list[str]:
         f"Date: {invoice_date}",
         "",
         f"Customer: {customer_name}",
-        f"{customer_email}",
+        f"Email: {customer_email}",
+        f"Phone: {customer_phone or 'N/A'}",
         "",
     ]
 

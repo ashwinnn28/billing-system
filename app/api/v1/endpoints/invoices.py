@@ -58,37 +58,6 @@ def create_invoice(
         raise HTTPException(status_code=500, detail="Failed to create invoice")
 
 
-@router.get("/test-email")
-def test_invoice_email(
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-    current_user=Depends(check_role(["admin", "staff"]))
-):
-    try:
-        invoice = InvoiceService.get_latest_invoice(db)
-        if not invoice:
-            raise HTTPException(status_code=404, detail="No invoice available for test email")
-
-        pdf_path = PDFService.generate_invoice_pdf(invoice)
-        customer_email = invoice.customer.email
-
-        background_tasks.add_task(
-            send_invoice_email,
-            customer_email,
-            invoice.id,
-            pdf_path,
-        )
-
-        return {
-            "message": "Email sent successfully",
-            "sent_to": customer_email,
-            "invoice_id": invoice.id
-        }
-    except Exception as e:
-        logger.error(str(e))
-        raise
-
-
 @router.get(
     "/{invoice_id}",
     response_model=InvoiceResponse

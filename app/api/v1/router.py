@@ -5,7 +5,8 @@ from app.api.v1.endpoints import (
     products,
     invoices,
     payments,
-    auth
+    auth,
+    denominations
 )
 
 
@@ -25,6 +26,10 @@ api_router.include_router(
 
 api_router.include_router(
     payments.router
+)
+
+api_router.include_router(
+    denominations.router
 )
 
 api_router.include_router(
