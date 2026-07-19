@@ -220,6 +220,47 @@
             border: 1px solid rgba(37, 99, 235, 0.2);
         }
 
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            min-width: 320px;
+            max-width: 420px;
+            padding: 16px 20px;
+            border-radius: 18px;
+            background: rgba(22, 163, 74, 0.98);
+            color: #ffffff;
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast strong {
+            display: block;
+            font-size: 1rem;
+            line-height: 1.3;
+        }
+
+        .toast button {
+            border: none;
+            background: transparent;
+            color: #ffffff;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 0;
+        }
+
         .invoice-items,
         .denomination-list,
         .invoice-table {
@@ -251,27 +292,36 @@
             color: #475569;
         }
 
+        .invoice-table {
+            border: 1px solid #e5e7f2;
+            border-radius: 24px;
+            overflow: hidden;
+            background: var(--surface);
+            box-shadow: inset 0 0 0 1px #e5e7eb;
+        }
+
         .invoice-table-header,
         .invoice-table-row {
             display: grid;
-            grid-template-columns: 1.5fr repeat(6, minmax(90px, 1fr));
+            grid-template-columns: 1.3fr repeat(6, minmax(90px, 1fr));
             gap: 14px;
             align-items: center;
+            padding: 18px 24px;
         }
 
         .invoice-table-header {
-            padding: 16px 0;
             font-size: 0.88rem;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.04em;
             font-weight: 800;
             color: var(--primary);
-            border-bottom: 2px solid var(--border-soft);
+            background: #f8fafc;
         }
 
         .invoice-table-row {
-            padding: 16px 0;
-            color: #344054;
-            border-bottom: 1px solid #e5e7eb;
+            color: #334155;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.96rem;
+            background: #ffffff;
         }
 
         .invoice-table-row:last-child {
@@ -280,18 +330,27 @@
 
         .summary-card,
         .invoice-summary-card {
-            border-radius: 20px;
-            padding: 24px;
+            border-radius: 28px;
+            padding: 26px 26px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+
+        .invoice-result-card {
+            border-radius: 32px;
+            padding: 32px;
             background: var(--surface);
-            border: 1px solid var(--border);
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow);
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
             gap: 16px;
-            padding: 14px 0;
+            padding: 16px 0;
             border-bottom: 1px solid #e5e7eb;
+            font-size: 0.96rem;
         }
 
         .summary-row:last-child {
@@ -301,6 +360,34 @@
         .summary-label {
             color: #475569;
             font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .summary-value {
+            color: #111827;
+            font-weight: 800;
+            text-align: right;
+            font-size: 0.95rem;
+        }
+
+        .invoice-summary-card {
+            margin-top: 24px;
+        }
+
+        .invoice-result-card h2.card-title {
+            margin-top: 0;
+            font-size: 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .invoice-result-card .section-title {
+            margin-bottom: 12px;
+        }
+
+        #invoice-customer {
+            display: inline-block;
+            color: #111827;
+            font-size: 1rem;
         }
 
         .summary-value {
@@ -382,7 +469,6 @@
             <h1>Billing Dashboard</h1>
             <p>Issue invoices, collect payments, and keep receipts organized with a clean workflow.</p>
         </div>
-        <button id="logout-button" class="button button-secondary hidden">Logout</button>
     </div>
 
     <div id="login-card" class="card">
@@ -494,19 +580,18 @@
                 <p class="section-title">Invoice Ready</p>
                 <h2 class="card-title">Invoice receipt</h2>
             </div>
-            <span class="chip">Ready to print</span>
         </div>
 
         <div class="summary-card">
             <div class="grid-2" style="align-items: start; gap: 30px; margin-bottom: 24px;">
                 <div>
                     <p class="section-title">Invoice</p>
-                    <p><strong>Invoice #:</strong> <span id="invoice-number">N/A</span></p>
+                    <p style="margin-bottom: 8px;"><strong>Invoice #:</strong> <span id="invoice-number">N/A</span></p>
                     <p><strong>Date:</strong> <span id="invoice-date">N/A</span></p>
                 </div>
                 <div>
                     <p class="section-title">Customer</p>
-                    <p><span id="invoice-customer">N/A</span></p>
+                    <p style="font-weight: 700; color: #111827; margin-bottom: 0;"><span id="invoice-customer">N/A</span></p>
                 </div>
             </div>
 
@@ -532,6 +617,13 @@
         </div>
     </div>
 </main>
+<div id="toast-success" class="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div>
+        <strong>Email sent successfully</strong>
+        <div>Your invoice has been generated and emailed to the customer.</div>
+    </div>
+    <button type="button" aria-label="Dismiss notification">×</button>
+</div>
 <script>
 let token = localStorage.getItem('billingToken') || '';
 let customers = [];
@@ -551,6 +643,8 @@ function setLoading(button, isLoading, label = 'Processing...') {
     }
 }
 
+let toastTimeoutId;
+
 function showMessage(elementId, message, type = 'error') {
     const element = document.getElementById(elementId);
     if (!element) return;
@@ -566,6 +660,30 @@ function clearMessage(elementId) {
     if (!element) return;
     element.textContent = '';
     element.classList.remove('visible', 'status-success', 'status-error', 'status-info');
+}
+
+function showToast(message, title = 'Email sent successfully') {
+    const toast = document.getElementById('toast-success');
+    if (!toast) return;
+    toast.querySelector('strong').textContent = title;
+    toast.querySelector('div > div').textContent = message;
+    toast.classList.add('visible');
+    if (toastTimeoutId) {
+        clearTimeout(toastTimeoutId);
+    }
+    toastTimeoutId = setTimeout(() => {
+        toast.classList.remove('visible');
+    }, 4000);
+}
+
+function hideToast() {
+    const toast = document.getElementById('toast-success');
+    if (!toast) return;
+    toast.classList.remove('visible');
+    if (toastTimeoutId) {
+        clearTimeout(toastTimeoutId);
+        toastTimeoutId = undefined;
+    }
 }
 
 function createItemRow(productId = '', quantity = 1) {
@@ -674,13 +792,17 @@ function calculateDenominations(amount) {
 }
 
 function updateCashPaidFromDenominations() {
-    const denomValues = [500, 50, 20, 10, 5, 2, 1];
+    const denomValues = [500, 200, 100, 50, 20, 10, 5, 2, 1];
     const counts = Array.from(document.querySelectorAll('.denomination-count')).map(input => Number(input.value) || 0);
     const total = denomValues.reduce((sum, value, index) => sum + value * counts[index], 0);
     const paidInput = document.getElementById('cash-paid');
     if (paidInput) {
         paidInput.value = total.toFixed(2);
     }
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function getCustomerByEmail(email) {
@@ -739,7 +861,7 @@ function renderInvoicePage(invoice) {
             const row = document.createElement('div');
             row.className = 'invoice-table-row';
             row.innerHTML = `
-                <div>${item.product_id || item.product_code || 'N/A'}</div>
+                <div>${item.product_code || item.product_id || 'N/A'}</div>
                 <div>${formatCurrency(item.price || item.unit_price || 0)}</div>
                 <div>${item.quantity || 0}</div>
                 <div>${formatCurrency(item.amount || item.purchase_price || 0)}</div>
@@ -860,6 +982,10 @@ async function onGenerateBill() {
         showMessage('billing-error', 'Customer email is required.');
         return;
     }
+    if (!isValidEmail(email)) {
+        showMessage('billing-error', 'Please enter a valid customer email address.');
+        return;
+    }
     if (!items.length) {
         showMessage('billing-error', 'Add at least one product item to continue.');
         return;
@@ -887,6 +1013,7 @@ async function onGenerateBill() {
 
         renderInvoicePage(invoice);
         showInvoicePage();
+        showToast('Your invoice was generated and the email has been sent to the customer.');
     } catch (error) {
         showMessage('billing-error', error.message || 'Unable to generate invoice.');
     } finally {
@@ -904,6 +1031,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.denomination-count').forEach(input => {
         input.addEventListener('input', updateCashPaidFromDenominations);
     });
+    const toastButton = document.querySelector('#toast-success button');
+    if (toastButton) {
+        toastButton.addEventListener('click', hideToast);
+    }
 
     resetBillingPage();
 

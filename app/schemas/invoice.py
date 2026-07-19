@@ -18,7 +18,7 @@ class InvoiceCreate(BaseModel):
 class InvoiceItemResponse(BaseModel):
     id: int
     invoice_id: int
-    product_id: str = Field(..., alias='product_code')
+    product_code: str
     quantity: int
     price: float
     amount: float
@@ -26,7 +26,7 @@ class InvoiceItemResponse(BaseModel):
     tax_amount: float
     total_price: float
 
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InvoiceResponse(BaseModel):

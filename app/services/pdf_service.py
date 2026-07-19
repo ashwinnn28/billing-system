@@ -59,7 +59,7 @@ def _prepare_invoice_lines(invoice) -> list[str]:
     invoice_number = getattr(invoice, "invoice_number", None) or getattr(invoice, "id", None)
     invoice_date = getattr(invoice, "date", None) or getattr(invoice, "created_at", None) or datetime.utcnow()
     if isinstance(invoice_date, datetime):
-        invoice_date = invoice_date.strftime("%Y-%m-%d %H:%M:%S")
+        invoice_date = invoice_date.strftime("%d/%m/%Y, %I:%M %p").lower()
 
     customer = getattr(invoice, "customer", None)
     customer_name = (
@@ -70,37 +70,86 @@ def _prepare_invoice_lines(invoice) -> list[str]:
     )
     customer_email = getattr(customer, "email", "")
 
-    total_amount = getattr(invoice, "total", None) or getattr(invoice, "subtotal", None) or 0
+    subtotal = getattr(invoice, "subtotal", 0) or 0
+    tax = getattr(invoice, "tax", 0) or 0
+    total = getattr(invoice, "total", 0) or 0
+    paid_amount = getattr(invoice, "paid_amount", 0) or 0
+    balance = getattr(invoice, "balance", 0) or 0
+    balance_label = "Change due to customer" if balance < 0 else "Balance due from customer"
+    balance_amount = abs(balance)
 
-    lines = [
-        f"Invoice #{invoice_number}",
+    def fmt(value):
+        return f"Rs {value:,.2f}"
+
+    header = [
+        "Invoice receipt",
+        "",
+    ]
+
+    detail_lines = [
+        f"Invoice #: {invoice_number}",
         f"Date: {invoice_date}",
         "",
         f"Customer: {customer_name}",
-        f"Email: {customer_email}",
+        f"{customer_email}",
         "",
-        "Items:",
     ]
+
+    table_header = _table_row(
+        ["Product ID", "Unit Price", "Quantity", "Purchase Price", "Tax %", "Tax Value", "Total Price"],
+        [16, 14, 10, 16, 8, 12, 14],
+    )
+    separator = "=" * 112
+
+    rows = [table_header, separator]
 
     items = getattr(invoice, "invoice_items", None) or getattr(invoice, "items", None) or []
     if not items:
-        lines.append("  - No items available")
+        rows.append("No invoice items were returned for this invoice.")
     else:
         for item in items:
-            description = getattr(item, "description", None) or getattr(item, "name", None) or "Item"
-            quantity = getattr(item, "quantity", None) or getattr(item, "qty", None) or 1
+            product_id = getattr(item, "product_code", None) or getattr(item, "product_id", None) or "N/A"
+            quantity = getattr(item, "quantity", None) or 0
             price = getattr(item, "price", None) or getattr(item, "unit_price", None) or 0
-            line_total = getattr(item, "total", None)
-            if line_total is None:
-                try:
-                    line_total = float(quantity) * float(price)
-                except Exception:
-                    line_total = price
-            lines.append(f"  - {description}  Qty: {quantity}  Price: Rs {price:.2f}  Total: Rs {line_total:.2f}")
+            amount = getattr(item, "amount", None) or getattr(item, "subtotal", None) or (price * quantity)
+            tax_percentage = getattr(item, "tax_percentage", None)
+            tax_percentage = tax_percentage if tax_percentage is not None else getattr(item, "tax", None) or 0
+            tax_amount = getattr(item, "tax_amount", None) or getattr(item, "tax_value", None) or (amount * tax_percentage / 100)
+            total_price = getattr(item, "total_price", None) or getattr(item, "total", None) or (amount + tax_amount)
+            rows.append(
+                _table_row(
+                    [
+                        product_id,
+                        fmt(price),
+                        quantity,
+                        fmt(amount),
+                        f"{tax_percentage}%",
+                        fmt(tax_amount),
+                        fmt(total_price),
+                    ],
+                    [16, 14, 10, 16, 8, 12, 14],
+                )
+            )
 
-    lines.append("")
-    lines.append(f"Total Amount: Rs {total_amount:.2f}")
-    return lines
+    summary_lines = [
+        "",
+        separator,
+        f"Subtotal:{fmt(subtotal):>81}",
+        f"Tax:{fmt(tax):>88}",
+        f"Total:{fmt(total):>86}",
+        f"Paid:{fmt(paid_amount):>88}",
+    ]
+
+    return header + detail_lines + rows + summary_lines
+
+def _table_row(columns: list[str], widths: list[int]) -> str:
+    row = []
+    for value, width in zip(columns, widths):
+        text = str(value)
+        if len(text) > width:
+            text = text[: width - 3] + "..."
+        row.append(text.ljust(width))
+    return "  ".join(row)
 
 
 class PDFService:
